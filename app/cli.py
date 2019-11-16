@@ -7,8 +7,6 @@ def register(app):
     @app.cli.command()
     def init():
         print("initializing database")
-        # if os.path.exists("migrations"):
-        #     os.rmdir("migrations")
         if os.path.exists("app.db"):
             os.remove("app.db")
         os.system("flask db init")

@@ -47,10 +47,6 @@ def explore():
     page = request.args.get('page', 1, type=int)
     chats = Chat.query.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
     chat_items = sorted(chats.items, key=lambda ch: ch.followed_by.count(), reverse=True)
-    # total = func.count(followers.c.user_id).label('total')
-    # chats = db.session.query(Chat, total).join(followers).group_by(Chat).order_by(total.desc())\
-    #     .paginate(page, current_app.config['CHATS_PER_PAGE'], False)
-    # chat_items = (c[0] for c in chats.items)
     next_url = url_for('main.index', page=chats.next_num) if chats.has_next else None
     prev_url = url_for('main.index', page=chats.prev_num) if chats.has_prev else None
     return render_template('explore.html', title='Explore',
