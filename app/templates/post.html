@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+    <a class='nounderline' href="{{ url_for('main.user', username=post.author.username) }}">
+        <img alt src="{{ post.author.avatar(25) }}" />
+    </a>
+    <a href="{{ url_for('main.user', username=post.author.username) }}">
+        {{ post.author.username }}
+    </a>
+    in <a href="{{ url_for('main.chat', name=post.chat.name) }}">chat/{{ post.chat.name }}</a>
+    posted {{ moment(post.created_at).fromNow() }}:
+
+    <br><br>
+    {% if not current_user.has_liked(post) %}
+    <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
+    {% else %}
+    <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
+    {% endif %}
+
+    <h2>{{ post.title }}</h2>
+    {% if post.attachment %}
+        <img class="attachment-big" alt="{{ post.attachment.filename }}" src="{{ post.attachment.url }}">
+    {% endif %}
+    <p>{{ post.body }}</p>
+
+    <br>
+    <div class="container">
+        {{ wtf.quick_form(form) }}
+    </div>
+    <br>
+    {% for comment in comments %}
+        {% include '_comment.html' %}
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer comments
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older comments <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}

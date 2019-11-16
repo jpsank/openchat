@@ -1,0 +1,48 @@
+
+.like-button, .unlike-button {
+  border-radius: 10px;
+  padding: 2px;
+  display: block;
+  min-width: 50px;
+  max-width: 80px;
+  text-align: center;
+}
+.like-button {
+  color: white;
+  background-color: lightskyblue;
+}
+.like-button:hover {
+  color: white;
+  background-color: lightgreen;
+  text-decoration: none;
+}
+.unlike-button {
+  color: green;
+  background-color: palegreen;
+}
+.unlike-button:hover {
+  color: red;
+  background-color: ghostwhite;
+  text-decoration: none;
+}
+
+
+.nounderline {
+  text-decoration: none !important;
+}
+.custom-link {
+  color: #333;
+  text-decoration: none !important;
+}
+.custom-link:hover {
+  color: #333;
+}
+
+.attachment-big {
+  max-width: 100%;
+  max-height: 500px;
+}
+.attachment-small {
+  max-width: 100%;
+  max-height: 250px;
+}

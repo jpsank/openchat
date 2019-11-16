@@ -1,0 +1,11 @@
+    <table class="table table-hover">
+        <tr>
+            <td>
+                <a href="{{ url_for('main.chat', name=chat.name) }}">
+                    chat/{{ chat.name }}
+                </a>
+                {{ chat.followed_by.count() }} followers
+                <p>{{ chat.about }}</p>
+            </td>
+        </tr>
+    </table>

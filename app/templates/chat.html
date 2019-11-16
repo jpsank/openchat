@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if not current_user.is_following(chat) %}
+    <a class="like-button" href="{{ url_for('main.follow', name=chat.name) }}">Follow</a>
+    {% else %}
+    <a class="unlike-button" href="{{ url_for('main.unfollow', name=chat.name) }}">Following</a>
+    {% endif %}
+
+    <h1>chat/{{ chat.name }}</h1>
+    <p>{{ chat.about }}</p>
+
+    <br><br>
+    <a href="{{ url_for('main.make_post', chat_name=chat.name) }}">Make a Post</a>
+    <br><br>
+    {% for post in posts %}
+        {% include '_post.html' %}
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer posts
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older posts <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}

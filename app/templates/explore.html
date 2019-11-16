@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h2>Hi, {{ current_user.username }}!</h2>
+    <br>
+    {% if form %}
+        {{ wtf.quick_form(form) }}
+    <br>
+    {% endif %}
+    <h1>Top Chats</h1>
+    {% for chat in chats %}
+        {% include '_chat.html' %}
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer chats
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older chats <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
