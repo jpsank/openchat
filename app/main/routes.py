@@ -101,11 +101,13 @@ def make_post(chat_name):
         new_post = Post(title=form.title.data, body=form.body.data, author=current_user)
         new_post.chat = Chat.query.filter_by(name=chat_name).first()
 
-        if request.files['image']:
-            filename = images.save(request.files['image'])
-            url = images.url(filename)
-            image = Image(filename=filename, url=url)
-            new_post.attachment = image
+        if 'image' in request.files:
+            file = request.files['image']
+            if file:
+                filename = images.save(file)
+                url = images.url(filename)
+                image = Image(filename=filename, url=url)
+                new_post.attachment = image
 
         db.session.add(new_post)
         db.session.commit()
