@@ -19,9 +19,9 @@ class Config(object):
     COMMENTS_PER_PAGE = 50
     CHATS_PER_PAGE = 25
 
-    UPLOADS_DEFAULT_DEST = basedir + '/app/static/img/'
-    UPLOADS_DEFAULT_URL = 'http://localhost:5000/static/img/'
+    UPLOADS_DEFAULT_DEST = os.path.join(basedir, 'app/static/img/')
+    # UPLOADS_DEFAULT_URL = 'http://puffyboa.xyz/openchat/static/img/'
 
-    UPLOADED_IMAGES_DEST = basedir + '/app/static/img/'
-    UPLOADED_IMAGES_URL = 'http://localhost:5000/static/img/'
+    UPLOADED_IMAGES_DEST = os.path.join(basedir, 'app/static/img/')
+    # UPLOADED_IMAGES_URL = 'http://puffyboa.xyz/openchat/static/img/'
 
