@@ -211,5 +211,5 @@ def edit_chat(name):
         return redirect(url_for('main.show_chat', name=chat.name))
     elif request.method == 'GET':
         form.about.data = chat.about
-    return render_template('edit_chat.html', title=f'Edit chat/{chat.name}', chat=chat,
+    return render_template('edit_chat.html', title='Edit chat/{}'.format(chat.name), chat=chat,
                            form=form)
