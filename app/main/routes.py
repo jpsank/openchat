@@ -154,8 +154,8 @@ def follow(name):
         return redirect(url_for('main.index'))
     current_user.follow(the_chat)
     db.session.commit()
-    flash('You are following {}!'.format(name))
-    return redirect(url_for('main.chat', name=name))
+    flash('You followed chat/{}!'.format(name))
+    return redirect(request.referrer or url_for('main.chat', name=name))
 
 
 @bp.route('/unfollow/<name>')
@@ -167,8 +167,8 @@ def unfollow(name):
         return redirect(url_for('main.index'))
     current_user.unfollow(the_chat)
     db.session.commit()
-    flash('You are not following {}.'.format(name))
-    return redirect(url_for('main.chat', name=name))
+    flash('You stopped following chat/{}.'.format(name))
+    return redirect(request.referrer or url_for('main.chat', name=name))
 
 
 @bp.route('/like/<post_id>')
