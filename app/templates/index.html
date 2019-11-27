@@ -2,17 +2,12 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h2>Hi, {{ current_user.username }}!</h2>
+    <h3>Hi, {{ current_user.username }}!</h3>
     <h1>Your feed</h1>
-    {% if form %}
-    {{ wtf.quick_form(form) }}
-    <br>
-    {% endif %}
-    {% if current_user.following.count() == 0 %}
-        <p>No posts. <a href="{{ url_for('main.explore') }}">Find some chats to follow.</a></p>
-    {% endif %}
     {% for post in posts %}
         {% include '_post.html' %}
+    {% else %}
+        <p>Nothing here. <a href="{{ url_for('main.explore') }}">Find some chats to follow.</a></p>
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">

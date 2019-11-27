@@ -13,11 +13,20 @@
     posted {{ moment(post.created_at).fromNow() }}:
 
     <br><br>
-    {% if not current_user.has_liked(post) %}
-    <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
-    {% else %}
-    <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
-    {% endif %}
+    <table>
+        <tr>
+            <td width="20px">
+                {{ post.liked_by.count() }}
+            </td>
+            <td>
+                {% if not current_user.has_liked(post) %}
+                <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
+                {% else %}
+                <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
 
     <h2>{{ post.title }}</h2>
     {% if post.attachment %}

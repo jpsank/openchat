@@ -1,6 +1,9 @@
     <a class='custom-link' href="{{ url_for('main.show_post', id=post.id) }}">
     <table class="table table-hover">
         <tr>
+            <td>
+                {{ post.liked_by.count() }}
+            </td>
             <td width="50px">
                 {% if not current_user.has_liked(post) %}
                 <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
@@ -13,7 +16,7 @@
                     <img alt src="{{ post.author.avatar(50) }}" />
                 </a>
             </td>
-            <td>
+            <td width="100%">
                 <a href="{{ url_for('main.show_user', username=post.author.username) }}">
                     {{ post.author.username }}
                 </a>

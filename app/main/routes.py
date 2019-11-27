@@ -4,8 +4,8 @@ from flask import render_template, flash, redirect, url_for, request, g, \
 from flask_login import current_user, login_required
 from app import db
 from sqlalchemy import func
-from app.main.forms import EditProfileForm, PostForm, ChatForm, CommentForm, EditChatForm
-from app.models import User, Post, Image, Chat, Comment, followers
+from app.main.forms import EditProfileForm, PostForm, ChatForm, CommentForm, EditChatForm, SearchForm
+from app.models import User, Post, Image, Chat, Comment, followers, Like
 from app.main import bp
 from app import Config, images
 import os
@@ -45,13 +45,37 @@ def explore():
         return redirect(url_for('main.show_chat', name=new_chat.name))
 
     page = request.args.get('page', 1, type=int)
-    chats = Chat.query.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
-    chat_items = sorted(chats.items, key=lambda ch: ch.followed_by.count(), reverse=True)
+    # chats = Chat.query.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
+    # chat_items = sorted(chats.items, key=lambda ch: ch.followed_by.count(), reverse=True)
+    chats = db.session.query(Chat).join(followers).group_by(Chat.id).order_by(func.count().desc())
+    chats = chats.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
+
     next_url = url_for('main.index', page=chats.next_num) if chats.has_next else None
     prev_url = url_for('main.index', page=chats.prev_num) if chats.has_prev else None
     return render_template('explore.html', title='Explore',
-                           chats=chat_items, next_url=next_url, prev_url=prev_url,
+                           chats=chats.items, next_url=next_url, prev_url=prev_url,
                            form=form)
+
+
+@bp.route('/popular', methods=['GET', 'POST'])
+@login_required
+def popular():
+    searchForm = SearchForm()
+    posts = db.session.query(Post)
+
+    if searchForm.validate_on_submit():
+        posts = posts.filter(Post.title.like('%' + searchForm.search.data + '%') |
+                             Post.body.like('%' + searchForm.search.data + '%'))
+
+    posts = posts.join(Like).group_by(Post.id).order_by(func.count().desc())
+    page = request.args.get('page', 1, type=int)
+    posts = posts.paginate(page, current_app.config['POSTS_PER_PAGE'], False)
+
+    next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
+    prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
+    return render_template('popular.html', title='Popular',
+                           posts=posts.items, next_url=next_url, prev_url=prev_url,
+                           form=searchForm)
 
 
 @bp.route('/chat/<name>', methods=['GET', 'POST'])

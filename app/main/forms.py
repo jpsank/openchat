@@ -52,3 +52,6 @@ class EditChatForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class SearchForm(FlaskForm):
+    search = StringField('Search')
+

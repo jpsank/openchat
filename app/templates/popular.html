@@ -3,23 +3,22 @@
 
 {% block app_content %}
     <h3>Hi, {{ current_user.username }}!</h3>
-    <br>
+    <h1>Popular Posts</h1>
     {{ wtf.quick_form(form) }}
     <br>
-    <h1>Top Chats</h1>
-    {% for chat in chats %}
-        {% include '_chat.html' %}
+    {% for post in posts %}
+        {% include '_post.html' %}
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">
             <li class="previous{% if not prev_url %} disabled{% endif %}">
                 <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> Newer chats
+                    <span aria-hidden="true">&larr;</span> Newer posts
                 </a>
             </li>
             <li class="next{% if not next_url %} disabled{% endif %}">
                 <a href="{{ next_url or '#' }}">
-                    Older chats <span aria-hidden="true">&rarr;</span>
+                    Older posts <span aria-hidden="true">&rarr;</span>
                 </a>
             </li>
         </ul>
