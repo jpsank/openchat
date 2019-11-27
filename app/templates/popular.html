@@ -8,6 +8,8 @@
     <br>
     {% for post in posts %}
         {% include '_post.html' %}
+    {% else %}
+        <p>No results.</p>
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">

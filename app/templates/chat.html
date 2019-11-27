@@ -9,11 +9,13 @@
     {% endif %}
 
     <h1>chat/{{ chat.name }}</h1>
-    <p>{{ chat.about }}</p>
-
-    {% if current_user == chat.creator %}
-    <p><a href="{{ url_for('main.edit_chat', name=chat.name) }}">Edit your chat</a></p>
-    {% endif %}
+    <p>
+        {{ chat.about }}
+        {% if current_user == chat.creator %}
+            <a href="{{ url_for('main.edit_chat', name=chat.name) }}">Edit</a>
+        {% endif %}
+    </p>
+    <p>{{ chat.followed_by.count() }} followers</p>
 
     <br><br>
     <a href="{{ url_for('main.make_post', chat_name=chat.name) }}">Make a Post</a>

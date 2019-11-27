@@ -92,6 +92,7 @@ def show_chat(name):
                            posts=posts.items, next_url=next_url, prev_url=prev_url)
 
 
+@bp.route('/make_post', methods=['GET', 'POST'], defaults={'chat_name': None})
 @bp.route('/make_post/<chat_name>', methods=['GET', 'POST'])
 def make_post(chat_name):
     form = PostForm(chat_name=chat_name)
