@@ -1,4 +1,4 @@
-    <a class='custom-link' href="{{ url_for('main.post', id=post.id) }}">
+    <a class='custom-link' href="{{ url_for('main.show_post', id=post.id) }}">
     <table class="table table-hover">
         <tr>
             <td width="50px">
@@ -9,16 +9,16 @@
                 {% endif %}
             </td>
             <td width="50px">
-                <a href="{{ url_for('main.user', username=post.author.username) }}">
+                <a href="{{ url_for('main.show_user', username=post.author.username) }}">
                     <img alt src="{{ post.author.avatar(50) }}" />
                 </a>
             </td>
             <td>
-                <a href="{{ url_for('main.user', username=post.author.username) }}">
+                <a href="{{ url_for('main.show_user', username=post.author.username) }}">
                     {{ post.author.username }}
                 </a>
                 {% if include_chat %}
-                    in <a href="{{ url_for('main.chat', name=post.chat.name) }}">chat/{{ post.chat.name }}</a>
+                    in <a href="{{ url_for('main.show_chat', name=post.chat.name) }}">chat/{{ post.chat.name }}</a>
                 {% endif %}
                 posted {{ moment(post.created_at).fromNow() }}:
                 <br>

@@ -1,12 +1,12 @@
     <table class="table table-hover">
         <tr>
             <td width="70px">
-                <a href="{{ url_for('main.user', username=comment.author.username) }}">
+                <a href="{{ url_for('main.show_user', username=comment.author.username) }}">
                     <img alt src="{{ comment.author.avatar(70) }}" />
                 </a>
             </td>
             <td>
-                <a href="{{ url_for('main.user', username=comment.author.username) }}">
+                <a href="{{ url_for('main.show_user', username=comment.author.username) }}">
                     {{ comment.author.username }}
                 </a>
                 commented {{ moment(comment.created_at).fromNow() }}:

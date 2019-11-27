@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, url_for, request, g, \
 from flask_login import current_user, login_required
 from app import db
 from sqlalchemy import func
-from app.main.forms import EditProfileForm, PostForm, ChatForm, CommentForm
+from app.main.forms import EditProfileForm, PostForm, ChatForm, CommentForm, EditChatForm
 from app.models import User, Post, Image, Chat, Comment, followers
 from app.main import bp
 from app import Config, images
@@ -42,7 +42,7 @@ def explore():
         db.session.add(new_chat)
         db.session.commit()
         flash('Your chat is now live!')
-        return redirect(url_for('main.chat', name=new_chat.name))
+        return redirect(url_for('main.show_chat', name=new_chat.name))
 
     page = request.args.get('page', 1, type=int)
     chats = Chat.query.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
@@ -56,15 +56,15 @@ def explore():
 
 @bp.route('/chat/<name>', methods=['GET', 'POST'])
 @login_required
-def chat(name):
-    the_chat = Chat.query.filter_by(name=name).first_or_404()
+def show_chat(name):
+    chat = Chat.query.filter_by(name=name).first_or_404()
 
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(chat=the_chat).order_by(Post.created_at.desc())\
+    posts = Post.query.filter_by(chat=chat).order_by(Post.created_at.desc())\
         .paginate(page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.chat', name=name, page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.chat', name=name, page=posts.prev_num) if posts.has_prev else None
-    return render_template('chat.html', title=the_chat.name, chat=the_chat,
+    next_url = url_for('main.show_chat', name=name, page=posts.next_num) if posts.has_next else None
+    prev_url = url_for('main.show_chat', name=name, page=posts.prev_num) if posts.has_prev else None
+    return render_template('chat.html', title=chat.name, chat=chat,
                            posts=posts.items, next_url=next_url, prev_url=prev_url)
 
 
@@ -85,45 +85,45 @@ def make_post(chat_name):
         db.session.add(new_post)
         db.session.commit()
         flash('Your post is now live!')
-        return redirect(url_for('main.chat', name=chat_name))
+        return redirect(url_for('main.show_chat', name=chat_name))
     return render_template('make_post.html', title="New Post", form=form)
 
 
 @bp.route('/post/<id>', methods=['GET', 'POST'])
 @login_required
-def post(id):
-    the_post = Post.query.filter_by(id=id).first_or_404()
+def show_post(id):
+    post = Post.query.filter_by(id=id).first_or_404()
 
     form = CommentForm()
     if form.validate_on_submit():
         comment = Comment(body=form.body.data, author=current_user)
-        comment.post = the_post
+        comment.post = post
         db.session.add(comment)
         db.session.commit()
         flash('Your comment is now live!')
-        return redirect(url_for('main.post', id=id))
+        return redirect(url_for('main.show_post', id=id))
 
     page = request.args.get('page', 1, type=int)
     comments = Comment.query.filter_by(post_id=id).order_by(Comment.created_at.desc())\
         .paginate(page, current_app.config['COMMENTS_PER_PAGE'], False)
-    next_url = url_for('main.post', id=id, page=comments.next_num) if comments.has_next else None
-    prev_url = url_for('main.chat', id=id, page=comments.prev_num) if comments.has_prev else None
-    return render_template('post.html', title=the_post.title, post=the_post,
+    next_url = url_for('main.show_post', id=id, page=comments.next_num) if comments.has_next else None
+    prev_url = url_for('main.show_chat', id=id, page=comments.prev_num) if comments.has_prev else None
+    return render_template('post.html', title=post.title, post=post,
                            comments=comments.items, next_url=next_url, prev_url=prev_url,
                            form=form)
 
 
 @bp.route('/user/<username>')
-def user(username):
-    u = User.query.filter_by(username=username).first_or_404()
+def show_user(username):
+    user = User.query.filter_by(username=username).first_or_404()
 
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(author=u).order_by(Post.created_at.desc()) \
+    posts = Post.query.filter_by(author=user).order_by(Post.created_at.desc()) \
         .paginate(page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.user', username=username, page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.user', username=username, page=posts.prev_num) if posts.has_prev else None
+    next_url = url_for('main.show_user', username=username, page=posts.next_num) if posts.has_next else None
+    prev_url = url_for('main.show_user', username=username, page=posts.prev_num) if posts.has_prev else None
 
-    return render_template('user.html', user=u,
+    return render_template('user.html', user=user,
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
                            include_chat=True)
 
@@ -137,7 +137,7 @@ def edit_profile():
         current_user.about_me = form.about_me.data
         db.session.commit()
         flash('Your changes have been saved.')
-        return redirect(url_for('main.user', username=current_user.username))
+        return redirect(url_for('main.show_user', username=current_user.username))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
@@ -155,7 +155,7 @@ def follow(name):
     current_user.follow(the_chat)
     db.session.commit()
     flash('You followed chat/{}!'.format(name))
-    return redirect(request.referrer or url_for('main.chat', name=name))
+    return redirect(request.referrer or url_for('main.show_chat', name=name))
 
 
 @bp.route('/unfollow/<name>')
@@ -168,7 +168,7 @@ def unfollow(name):
     current_user.unfollow(the_chat)
     db.session.commit()
     flash('You stopped following chat/{}.'.format(name))
-    return redirect(request.referrer or url_for('main.chat', name=name))
+    return redirect(request.referrer or url_for('main.show_chat', name=name))
 
 
 @bp.route('/like/<post_id>')
@@ -181,7 +181,7 @@ def like(post_id):
     current_user.like(the_post)
     db.session.commit()
     flash('You liked the post!')
-    return redirect(request.referrer or url_for('main.post', id=post_id))
+    return redirect(request.referrer or url_for('main.show_post', id=post_id))
 
 
 @bp.route('/unlike/<post_id>')
@@ -194,4 +194,22 @@ def unlike(post_id):
     current_user.unlike(the_post)
     db.session.commit()
     flash('You unliked the post!')
-    return redirect(request.referrer or url_for('main.post', id=post_id))
+    return redirect(request.referrer or url_for('main.show_post', id=post_id))
+
+
+# Editing chats
+
+@bp.route('/edit_chat/<name>', methods=['GET', 'POST'])
+@login_required
+def edit_chat(name):
+    chat = current_user.chats.filter_by(name=name).first_or_404()
+    form = EditChatForm()
+    if form.validate_on_submit():
+        chat.about = form.about.data
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('main.show_chat', name=chat.name))
+    elif request.method == 'GET':
+        form.about.data = chat.about
+    return render_template('edit_chat.html', title=f'Edit chat/{chat.name}', chat=chat,
+                           form=form)

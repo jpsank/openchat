@@ -8,7 +8,7 @@
                 {% endif %}
             </td>
             <td>
-                <a href="{{ url_for('main.chat', name=chat.name) }}">
+                <a href="{{ url_for('main.show_chat', name=chat.name) }}">
                     chat/{{ chat.name }}
                 </a>
                 {{ chat.followed_by.count() }} followers

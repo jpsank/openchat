@@ -3,13 +3,13 @@
 
 {% block app_content %}
 
-    <a class='nounderline' href="{{ url_for('main.user', username=post.author.username) }}">
+    <a class='nounderline' href="{{ url_for('main.show_user', username=post.author.username) }}">
         <img alt src="{{ post.author.avatar(25) }}" />
     </a>
-    <a href="{{ url_for('main.user', username=post.author.username) }}">
+    <a href="{{ url_for('main.show_user', username=post.author.username) }}">
         {{ post.author.username }}
     </a>
-    in <a href="{{ url_for('main.chat', name=post.chat.name) }}">chat/{{ post.chat.name }}</a>
+    in <a href="{{ url_for('main.show_chat', name=post.chat.name) }}">chat/{{ post.chat.name }}</a>
     posted {{ moment(post.created_at).fromNow() }}:
 
     <br><br>

@@ -46,3 +46,9 @@ class ChatForm(FlaskForm):
     about = TextAreaField('Description', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+
+class EditChatForm(FlaskForm):
+    about = TextAreaField('Description', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
