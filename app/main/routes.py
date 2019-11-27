@@ -94,14 +94,16 @@ def show_chat(name):
 
 @bp.route('/make_post', methods=['GET', 'POST'], defaults={'chat_name': None})
 @bp.route('/make_post/<chat_name>', methods=['GET', 'POST'])
+@login_required
 def make_post(chat_name):
     form = PostForm(chat_name=chat_name)
     if form.validate_on_submit():
         chat_name = form.chat_name.data
+
         new_post = Post(title=form.title.data, body=form.body.data, author=current_user)
         new_post.chat = Chat.query.filter_by(name=chat_name).first()
 
-        if 'image' in request.files:
+        if request.files.get('image'):
             file = request.files['image']
             if file:
                 filename = images.save(file)
