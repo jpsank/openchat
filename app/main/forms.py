@@ -25,15 +25,11 @@ class EditProfileForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    chat_name = SelectField('Chat')
+    chat_name = SelectField('Chat', choices=[(c[0], c[0]) for c in db.session.query(Chat.name).all()])
     title = StringField('Title', validators=[DataRequired()])
     body = TextAreaField('Say something')
     image = FileField('Image', validators=[FileAllowed(images, 'Image Only!')])
     submit = SubmitField('Submit')
-
-    def __init__(self, *args, **kwargs):
-        super(PostForm, self).__init__(*args, **kwargs)
-        self.chat_name.choices = [(c[0], c[0]) for c in db.session.query(Chat.name).all()]
 
 
 class CommentForm(FlaskForm):

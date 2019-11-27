@@ -72,6 +72,7 @@ def chat(name):
 def make_post(chat_name):
     form = PostForm(chat_name=chat_name)
     if form.validate_on_submit():
+        chat_name = form.chat_name.data
         new_post = Post(title=form.title.data, body=form.body.data, author=current_user)
         new_post.chat = Chat.query.filter_by(name=chat_name).first()
 
