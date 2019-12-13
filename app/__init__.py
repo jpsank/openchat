@@ -1,6 +1,11 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
 from flask import Flask, request, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -11,6 +16,14 @@ from flask_moment import Moment
 from flask_uploads import UploadSet, IMAGES, configure_uploads
 
 from config import Config, basedir
+
+
+if Config.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=Config.SENTRY_DSN,
+        integrations=[FlaskIntegration(), SqlalchemyIntegration()]
+    )
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
