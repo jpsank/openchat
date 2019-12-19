@@ -37,38 +37,44 @@ def index():
 @bp.route('/explore', methods=['GET', 'POST'])
 @login_required
 def explore():
-    form = ChatForm()
-    if form.validate_on_submit():
-        name = form.name.data.replace(" ", "_")
-        new_chat = Chat(name=name, about=form.about.data, creator=current_user)
+    search_form = SearchForm()
+    chat_form = ChatForm()
+
+    if chat_form.validate_on_submit():
+        name = chat_form.name.data.replace(" ", "_")
+        new_chat = Chat(name=name, about=chat_form.about.data, creator=current_user)
         current_user.follow(new_chat)
         db.session.add(new_chat)
         db.session.commit()
         flash('Your chat is now live!')
         return redirect(url_for('main.show_chat', name=new_chat.name))
 
+    chats = db.session.query(Chat)
+
+    if search_form.validate_on_submit():
+        chats = chats.filter(Chat.name.like('%' + search_form.search.data + '%') |
+                             Chat.about.like('%' + search_form.search.data + '%'))
+
     page = request.args.get('page', 1, type=int)
-    # chats = Chat.query.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
-    # chat_items = sorted(chats.items, key=lambda ch: ch.followed_by.count(), reverse=True)
-    chats = db.session.query(Chat).join(followers).group_by(Chat.id).order_by(func.count().desc())
+    chats = chats.join(followers).group_by(Chat.id).order_by(func.count().desc())
     chats = chats.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
 
     next_url = url_for('main.explore', page=chats.next_num) if chats.has_next else None
     prev_url = url_for('main.explore', page=chats.prev_num) if chats.has_prev else None
     return render_template('explore.html', title='Explore',
                            chats=chats.items, next_url=next_url, prev_url=prev_url,
-                           form=form)
+                           search_form=search_form)
 
 
 @bp.route('/popular', methods=['GET', 'POST'])
 @login_required
 def popular():
-    searchForm = SearchForm()
+    search_form = SearchForm()
     posts = db.session.query(Post)
 
-    if searchForm.validate_on_submit():
-        posts = posts.filter(Post.title.like('%' + searchForm.search.data + '%') |
-                             Post.body.like('%' + searchForm.search.data + '%'))
+    if search_form.validate_on_submit():
+        posts = posts.filter(Post.title.like('%' + search_form.search.data + '%') |
+                             Post.body.like('%' + search_form.search.data + '%'))
 
     posts = posts.join(Like).group_by(Post.id).order_by(func.count().desc())
     page = request.args.get('page', 1, type=int)
@@ -78,17 +84,17 @@ def popular():
     prev_url = url_for('main.popular', page=posts.prev_num) if posts.has_prev else None
     return render_template('popular.html', title='Popular',
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
-                           form=searchForm)
+                           form=search_form, include_chat=True)
 
 
 @bp.route('/leaderboard', methods=['GET', 'POST'])
 @login_required
 def leaderboard():
-    searchForm = SearchForm()
+    search_form = SearchForm()
     users = db.session.query(User)
 
-    if searchForm.validate_on_submit():
-        users = users.filter(User.username.like('%' + searchForm.search.data + '%'))
+    if search_form.validate_on_submit():
+        users = users.filter(User.username.like('%' + search_form.search.data + '%'))
 
     users = users.join(Post).join(Like).group_by(User.id).order_by(func.count().desc())
     page = request.args.get('page', 1, type=int)
@@ -98,7 +104,7 @@ def leaderboard():
     prev_url = url_for('main.leaderboard', page=users.prev_num) if users.has_prev else None
     return render_template('leaderboard.html', title='Leaderboard',
                            users=users.items, next_url=next_url, prev_url=prev_url,
-                           form=searchForm)
+                           form=search_form)
 
 
 # Chats
@@ -115,6 +121,22 @@ def show_chat(name):
     prev_url = url_for('main.show_chat', name=name, page=posts.prev_num) if posts.has_prev else None
     return render_template('chat.html', title=chat.name, chat=chat,
                            posts=posts.items, next_url=next_url, prev_url=prev_url)
+
+
+@bp.route('/create_chat', methods=['GET', 'POST'])
+@login_required
+def create_chat():
+    form = ChatForm()
+
+    if form.validate_on_submit():
+        new_chat = Chat(name=form.name.data, about=form.about.data, creator=current_user)
+        current_user.follow(new_chat)
+        db.session.add(new_chat)
+        db.session.commit()
+        flash('Your new chat is now live!')
+        return redirect(url_for('main.show_chat', name=new_chat.name))
+
+    return render_template('create_chat.html', title="New Chat", form=form)
 
 
 # Posts
@@ -187,15 +209,13 @@ def show_user(username):
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfileForm(current_user.username)
+    form = EditProfileForm()
     if form.validate_on_submit():
-        current_user.username = form.username.data
         current_user.about_me = form.about_me.data
         db.session.commit()
         flash('Your changes have been saved.')
         return redirect(url_for('main.show_user', username=current_user.username))
     elif request.method == 'GET':
-        form.username.data = current_user.username
         form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', title='Edit Profile',
                            form=form)

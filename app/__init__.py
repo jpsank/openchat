@@ -63,5 +63,5 @@ if not app.debug and not app.testing:
     app.logger.info('OpenChat startup')
 
 
-from .util import filters
+from app.util import filters
 from app import models

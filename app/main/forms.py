@@ -8,20 +8,9 @@ from app import db, images
 
 
 class EditProfileForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
     about_me = TextAreaField('About me',
                              validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
-
-    def __init__(self, original_username, *args, **kwargs):
-        super(EditProfileForm, self).__init__(*args, **kwargs)
-        self.original_username = original_username
-
-    def validate_username(self, username):
-        if username.data != self.original_username:
-            user = User.query.filter_by(username=self.username.data).first()
-            if user is not None:
-                raise ValidationError('Please use a different username.')
 
 
 class PostForm(FlaskForm):
@@ -42,9 +31,17 @@ class CommentForm(FlaskForm):
 
 
 class ChatForm(FlaskForm):
-    name = StringField('Create a new chat', validators=[DataRequired()])
+    name = StringField('Name', validators=[DataRequired()])
     about = TextAreaField('Description', validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+    def validate_name(self, name):
+        if not name.data.isalnum():
+            raise ValidationError('Chat name must be alphanumeric (no spaces or special characters)')
+
+        chat = Chat.get_by_name(name.data)
+        if chat is not None:
+            raise ValidationError('That chat name is already taken.')
 
 
 class EditChatForm(FlaskForm):

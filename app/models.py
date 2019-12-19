@@ -76,17 +76,11 @@ class User(UserMixin, Base):
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
             digest, size)
 
-    @hybrid_property
     def score(self):
         score = 0
         for post in self.posts:
             score += post.liked_by.count()
         return score
-
-    # @score.expression
-    # def score(cls):
-    #     # this expression is used when querying the model
-    #     return func.count(cls.posts.liked_by)
 
     # Liking posts
 
@@ -146,7 +140,11 @@ class User(UserMixin, Base):
 
     @staticmethod
     def get_by_username(username):
-        return User.query.get(id)
+        return User.query.filter(func.lower(User.username) == func.lower(username)).first()
+
+    @staticmethod
+    def get_by_email(email):
+        return User.query.filter(func.lower(User.email) == func.lower(email)).first()
 
 
 @login.user_loader
@@ -198,6 +196,11 @@ class Chat(Base):
 
     def __repr__(self):
         return '<Chat {}>'.format(self.name)
+
+    @staticmethod
+    def get_by_name(name):
+        return Chat.query.filter(func.lower(Chat.name) == func.lower(name)).first()
+
 
 
 # Images

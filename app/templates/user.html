@@ -7,7 +7,7 @@
             <td>
                 <h1>u/{{ user.username }}</h1>
                 {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-                <p>User score: {{ user.score }}</p>
+                <p>User score: {{ user.score() }}</p>
                 {% if user.last_seen %}
                 <p>Last seen on: {{ moment(user.last_seen).format('LLL') }}</p>
                 {% endif %}

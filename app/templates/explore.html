@@ -3,12 +3,14 @@
 
 {% block app_content %}
     <h3>Hi, {{ current_user.username }}!</h3>
-    <br>
-    {{ wtf.quick_form(form) }}
-    <br>
     <h1>Top Chats</h1>
+    <a href="{{ url_for('main.create_chat') }}">Create a new chat</a>
+    <br><br>
+    {{ wtf.quick_form(search_form) }}
     {% for chat in chats %}
         {% include '_chat.html' %}
+    {% else %}
+        <p>No results.</p>
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">

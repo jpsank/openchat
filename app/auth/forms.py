@@ -17,16 +17,19 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     password2 = PasswordField(
         'Repeat Password', validators=[DataRequired(),
-                                           EqualTo('password')])
+                                       EqualTo('password')])
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
+        if not username.data.isalnum():
+            raise ValidationError('Username must be alphanumeric (no spaces or special characters)')
+
+        user = User.get_by_username(username.data)
         if user is not None:
             raise ValidationError('Please use a different username.')
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
+        user = User.get_by_email(email.data)
         if user is not None:
             raise ValidationError('Please use a different email address.')
 
