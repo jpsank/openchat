@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import os
 
+from app.util.filters import nl2br
 from app import db, login, basedir, Config
 
 
@@ -70,6 +71,10 @@ class User(UserMixin, Base):
 
     def __repr__(self):
         return '<User {} {}>'.format(self.username, self.email)
+
+    @property
+    def about_me_e(self):
+        return nl2br(str(escape(self.about_me)))
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
@@ -171,7 +176,7 @@ class Post(Base):
 
     @property
     def body_e(self):
-        return str(escape(self.body)).replace('\n', '<br>')
+        return nl2br(str(escape(self.body)))
 
 
 class Comment(Base):

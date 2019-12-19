@@ -6,7 +6,7 @@
             <td width="128px"><img alt src="{{ user.avatar(128) }}"></td>
             <td>
                 <h1>u/{{ user.username }}</h1>
-                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+                {% if user.about_me %}<p>{{ user.about_me_e|safe }}</p>{% endif %}
                 <p>User score: {{ user.score() }}</p>
                 {% if user.last_seen %}
                 <p>Last seen on: {{ moment(user.last_seen).format('LLL') }}</p>

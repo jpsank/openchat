@@ -3,8 +3,8 @@ from app import app
 
 
 # @app.template_filter()
-# def nl2br(text):
-#     return text.replace('\n', '<br>')
+def nl2br(text):
+    return text.replace('\n', '<br>')
 
 
 # @app.context_processor
