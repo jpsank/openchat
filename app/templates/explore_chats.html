@@ -6,7 +6,7 @@
     <h1>Top Chats</h1>
     <a href="{{ url_for('main.create_chat') }}">Create a new chat</a>
     <br><br>
-    {{ wtf.quick_form(search_form) }}
+    {{ wtf.quick_form(form) }}
     {% for chat in chats %}
         {% include '_chat.html' %}
     {% else %}

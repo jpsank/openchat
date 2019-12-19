@@ -7,7 +7,7 @@
     {% for post in posts %}
         {% include '_post.html' %}
     {% else %}
-        <p>Nothing here. <a href="{{ url_for('main.explore') }}">Find some chats to follow.</a></p>
+        <p>Nothing here. <a href="{{ url_for('main.explore_chats') }}">Find some chats to follow.</a></p>
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">

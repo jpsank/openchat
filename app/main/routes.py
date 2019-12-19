@@ -34,36 +34,25 @@ def index():
                            include_chat=True)
 
 
-@bp.route('/explore', methods=['GET', 'POST'])
+@bp.route('/explore_chats', methods=['GET', 'POST'])
 @login_required
-def explore():
-    search_form = SearchForm()
-    chat_form = ChatForm()
-
-    if chat_form.validate_on_submit():
-        name = chat_form.name.data.replace(" ", "_")
-        new_chat = Chat(name=name, about=chat_form.about.data, creator=current_user)
-        current_user.follow(new_chat)
-        db.session.add(new_chat)
-        db.session.commit()
-        flash('Your chat is now live!')
-        return redirect(url_for('main.show_chat', name=new_chat.name))
-
+def explore_chats():
+    form = SearchForm()
     chats = db.session.query(Chat)
 
-    if search_form.validate_on_submit():
-        chats = chats.filter(Chat.name.like('%' + search_form.search.data + '%') |
-                             Chat.about.like('%' + search_form.search.data + '%'))
+    if form.validate_on_submit():
+        chats = chats.filter(Chat.name.like('%' + form.search.data + '%') |
+                             Chat.about.like('%' + form.search.data + '%'))
 
     page = request.args.get('page', 1, type=int)
     chats = chats.join(followers).group_by(Chat.id).order_by(func.count().desc())
     chats = chats.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
 
-    next_url = url_for('main.explore', page=chats.next_num) if chats.has_next else None
-    prev_url = url_for('main.explore', page=chats.prev_num) if chats.has_prev else None
-    return render_template('explore.html', title='Explore',
+    next_url = url_for('main.explore_chats', page=chats.next_num) if chats.has_next else None
+    prev_url = url_for('main.explore_chats', page=chats.prev_num) if chats.has_prev else None
+    return render_template('explore_chats.html', title='Explore',
                            chats=chats.items, next_url=next_url, prev_url=prev_url,
-                           search_form=search_form)
+                           form=form)
 
 
 @bp.route('/popular', methods=['GET', 'POST'])
