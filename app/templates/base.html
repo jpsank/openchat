@@ -6,6 +6,7 @@
 
 {% block styles %}
     {{ super() }}
+    <script src="https://kit.fontawesome.com/64fa348c63.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 {% endblock %}
 
@@ -24,7 +25,9 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('main.index') }}">Home</a></li>
-                    <li><a href="{{ url_for('main.explore') }}">Explore</a></li>
+                    <li><a href="{{ url_for('main.popular') }}">Popular</a></li>
+                    <li><a href="{{ url_for('main.explore') }}">Chats</a></li>
+                    <li><a href="{{ url_for('main.leaderboard') }}">Leaderboard</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_anonymous %}

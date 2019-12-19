@@ -18,12 +18,15 @@ def before_request():
         db.session.commit()
 
 
+# Front pages
+
 @bp.route('/')
 @bp.route('/index')
 @login_required
 def index():
     page = request.args.get('page', 1, type=int)
     posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'], False)
+
     next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
     return render_template('index.html', title='Home',
@@ -50,8 +53,8 @@ def explore():
     chats = db.session.query(Chat).join(followers).group_by(Chat.id).order_by(func.count().desc())
     chats = chats.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
 
-    next_url = url_for('main.index', page=chats.next_num) if chats.has_next else None
-    prev_url = url_for('main.index', page=chats.prev_num) if chats.has_prev else None
+    next_url = url_for('main.explore', page=chats.next_num) if chats.has_next else None
+    prev_url = url_for('main.explore', page=chats.prev_num) if chats.has_prev else None
     return render_template('explore.html', title='Explore',
                            chats=chats.items, next_url=next_url, prev_url=prev_url,
                            form=form)
@@ -71,12 +74,34 @@ def popular():
     page = request.args.get('page', 1, type=int)
     posts = posts.paginate(page, current_app.config['POSTS_PER_PAGE'], False)
 
-    next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
+    next_url = url_for('main.popular', page=posts.next_num) if posts.has_next else None
+    prev_url = url_for('main.popular', page=posts.prev_num) if posts.has_prev else None
     return render_template('popular.html', title='Popular',
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
                            form=searchForm)
 
+
+@bp.route('/leaderboard', methods=['GET', 'POST'])
+@login_required
+def leaderboard():
+    searchForm = SearchForm()
+    users = db.session.query(User)
+
+    if searchForm.validate_on_submit():
+        users = users.filter(User.username.like('%' + searchForm.search.data + '%'))
+
+    users = users.join(Post).join(Like).group_by(User.id).order_by(func.count().desc())
+    page = request.args.get('page', 1, type=int)
+    users = users.paginate(page, current_app.config['USERS_PER_PAGE'], False)
+
+    next_url = url_for('main.leaderboard', page=users.next_num) if users.has_next else None
+    prev_url = url_for('main.leaderboard', page=users.prev_num) if users.has_prev else None
+    return render_template('leaderboard.html', title='Leaderboard',
+                           users=users.items, next_url=next_url, prev_url=prev_url,
+                           form=searchForm)
+
+
+# Chats
 
 @bp.route('/chat/<name>', methods=['GET', 'POST'])
 @login_required
@@ -91,6 +116,8 @@ def show_chat(name):
     return render_template('chat.html', title=chat.name, chat=chat,
                            posts=posts.items, next_url=next_url, prev_url=prev_url)
 
+
+# Posts
 
 @bp.route('/make_post', methods=['GET', 'POST'], defaults={'chat_name': None})
 @bp.route('/make_post/<chat_name>', methods=['GET', 'POST'])
@@ -139,6 +166,8 @@ def show_post(id):
                            comments=comments.items, next_url=next_url, prev_url=prev_url,
                            form=form)
 
+
+# Users
 
 @bp.route('/user/<username>')
 def show_user(username):

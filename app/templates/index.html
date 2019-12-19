@@ -3,37 +3,24 @@
 
 {% block app_content %}
     <h3>Hi, {{ current_user.username }}!</h3>
-    <table class="table">
-        <tr>
-            <td>
-                <h1>Your Feed</h1>
-            </td>
-            <td style="text-align: right;">
-                <h3><a href="{{ url_for('main.popular') }}">Popular</a></h3>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                {% for post in posts %}
-                    {% include '_post.html' %}
-                {% else %}
-                    <p>Nothing here. <a href="{{ url_for('main.explore') }}">Find some chats to follow.</a></p>
-                {% endfor %}
-                <nav aria-label="...">
-                    <ul class="pager">
-                        <li class="previous{% if not prev_url %} disabled{% endif %}">
-                            <a href="{{ prev_url or '#' }}">
-                                <span aria-hidden="true">&larr;</span> Newer posts
-                            </a>
-                        </li>
-                        <li class="next{% if not next_url %} disabled{% endif %}">
-                            <a href="{{ next_url or '#' }}">
-                                Older posts <span aria-hidden="true">&rarr;</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </td>
-        </tr>
-    </table>
+    <h1>Your Feed</h1>
+    {% for post in posts %}
+        {% include '_post.html' %}
+    {% else %}
+        <p>Nothing here. <a href="{{ url_for('main.explore') }}">Find some chats to follow.</a></p>
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer posts
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older posts <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 {% endblock %}

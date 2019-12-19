@@ -3,10 +3,10 @@
 
 {% block app_content %}
     <h3>Hi, {{ current_user.username }}!</h3>
-    <h1>Popular</h1>
+    <h1>Top Users</h1>
     {{ wtf.quick_form(form) }}
-    {% for post in posts %}
-        {% include '_post.html' %}
+    {% for user in users %}
+        {% include '_user.html' %}
     {% else %}
         <p>No results.</p>
     {% endfor %}
@@ -14,12 +14,12 @@
         <ul class="pager">
             <li class="previous{% if not prev_url %} disabled{% endif %}">
                 <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> Newer posts
+                    <span aria-hidden="true">&larr;</span> Newer users
                 </a>
             </li>
             <li class="next{% if not next_url %} disabled{% endif %}">
                 <a href="{{ next_url or '#' }}">
-                    Older posts <span aria-hidden="true">&rarr;</span>
+                    Older users <span aria-hidden="true">&rarr;</span>
                 </a>
             </li>
         </ul>

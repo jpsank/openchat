@@ -19,11 +19,7 @@
                 {{ post.liked_by.count() }}
             </td>
             <td>
-                {% if not current_user.has_liked(post) %}
-                <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
-                {% else %}
-                <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
-                {% endif %}
+                {% include "_vote.html" %}
             </td>
         </tr>
     </table>
@@ -31,8 +27,9 @@
     <h2>{{ post.title }}</h2>
     {% if post.attachment %}
         <img class="attachment-big" alt="{{ post.attachment.filename }}" src="{{ post.attachment.url }}">
+        <br><br>
     {% endif %}
-    <p>{{ post.body }}</p>
+    <p>{{ post.body_e|safe }}</p>
 
     <br>
     <div class="container">

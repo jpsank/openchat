@@ -1,8 +1,10 @@
 from datetime import datetime
 from hashlib import md5
 from time import time
-from flask import current_app, url_for
+from flask import current_app, url_for, escape
 from flask_login import UserMixin, current_user
+from sqlalchemy import func
+from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import os
@@ -74,11 +76,17 @@ class User(UserMixin, Base):
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
             digest, size)
 
+    @hybrid_property
     def score(self):
         score = 0
         for post in self.posts:
             score += post.liked_by.count()
         return score
+
+    # @score.expression
+    # def score(cls):
+    #     # this expression is used when querying the model
+    #     return func.count(cls.posts.liked_by)
 
     # Liking posts
 
@@ -136,6 +144,10 @@ class User(UserMixin, Base):
             return
         return User.query.get(id)
 
+    @staticmethod
+    def get_by_username(username):
+        return User.query.get(id)
+
 
 @login.user_loader
 def load_user(id):
@@ -158,6 +170,10 @@ class Post(Base):
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+    @property
+    def body_e(self):
+        return str(escape(self.body)).replace('\n', '<br>')
 
 
 class Comment(Base):

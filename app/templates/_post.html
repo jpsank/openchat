@@ -5,11 +5,7 @@
                 {{ post.liked_by.count() }}
             </td>
             <td width="50px">
-                {% if not current_user.has_liked(post) %}
-                <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
-                {% else %}
-                <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
-                {% endif %}
+                {% include "_vote.html" %}
             </td>
             <td width="50px">
                 <a href="{{ url_for('main.show_user', username=post.author.username) }}">
@@ -25,13 +21,12 @@
                 {% endif %}
                 posted {{ moment(post.created_at).fromNow() }}:
                 <br>
+                <h4>{{ post.title }}</h4>
                 {% if post.attachment %}
-                    <h4>{{ post.title }}</h4>
                     <img class="attachment-small" alt="{{ post.attachment.filename }}" src="{{ post.attachment.url }}">
-                {% else %}
-                    <h4>{{ post.title }}</h4>
-                    <p>{{ post.body }}</p>
+                    <br><br>
                 {% endif %}
+                <p>{{ post.body|truncate(150) }}</p>
             </td>
         </tr>
     </table>

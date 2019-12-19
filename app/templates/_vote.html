@@ -1,0 +1,5 @@
+{% if not current_user.has_liked(post) %}
+    <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
+{% else %}
+    <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
+{% endif %}
