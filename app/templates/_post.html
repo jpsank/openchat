@@ -21,12 +21,12 @@
                 {% endif %}
                 posted {{ moment(post.created_at).fromNow() }}:
                 <br>
-                <h4>{{ post.title }}</h4>
+                <h4>{{ post.title|censor }}</h4>
                 {% if post.attachment %}
                     <img class="attachment-small" alt="{{ post.attachment.filename }}" src="{{ post.attachment.url }}">
                     <br><br>
                 {% endif %}
-                <p>{{ post.body|truncate(150) }}</p>
+                <p>{{ post.body|truncate(150)|censor }}</p>
             </td>
         </tr>
     </table>
