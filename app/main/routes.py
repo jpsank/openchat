@@ -18,17 +18,25 @@ def before_request():
         db.session.commit()
 
 
+def paginate(items, per_page):
+    page = request.args.get('page', 1, type=int)
+
+    items = items.paginate(page, per_page, False)
+
+    next_url = url_for(request.endpoint, page=items.next_num) if items.has_next else None
+    prev_url = url_for(request.endpoint, page=items.prev_num) if items.has_prev else None
+    return items, next_url, prev_url
+
+
 # Front pages
 
 @bp.route('/')
 @bp.route('/index')
 @login_required
 def index():
-    page = request.args.get('page', 1, type=int)
-    posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'], False)
+    posts = current_user.followed_posts()
+    posts, next_url, prev_url = paginate(posts, current_app.config['POSTS_PER_PAGE'])
 
-    next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
     return render_template('index.html', title='Home',
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
                            include_chat=True)
@@ -44,12 +52,9 @@ def explore_chats():
         chats = chats.filter(Chat.name.like('%' + form.search.data + '%') |
                              Chat.about.like('%' + form.search.data + '%'))
 
-    page = request.args.get('page', 1, type=int)
     chats = chats.join(followers).group_by(Chat.id).order_by(func.count().desc())
-    chats = chats.paginate(page, current_app.config['CHATS_PER_PAGE'], False)
+    chats, next_url, prev_url = paginate(chats, current_app.config['CHATS_PER_PAGE'])
 
-    next_url = url_for('main.explore_chats', page=chats.next_num) if chats.has_next else None
-    prev_url = url_for('main.explore_chats', page=chats.prev_num) if chats.has_prev else None
     return render_template('explore_chats.html', title='Explore',
                            chats=chats.items, next_url=next_url, prev_url=prev_url,
                            form=form)
@@ -66,11 +71,8 @@ def popular():
                              Post.body.like('%' + search_form.search.data + '%'))
 
     posts = posts.join(Like).group_by(Post.id).order_by(func.count().desc())
-    page = request.args.get('page', 1, type=int)
-    posts = posts.paginate(page, current_app.config['POSTS_PER_PAGE'], False)
+    posts, next_url, prev_url = paginate(posts, current_app.config['POSTS_PER_PAGE'])
 
-    next_url = url_for('main.popular', page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.popular', page=posts.prev_num) if posts.has_prev else None
     return render_template('popular.html', title='Popular',
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
                            form=search_form, include_chat=True)
@@ -86,11 +88,8 @@ def leaderboard():
         users = users.filter(User.username.like('%' + search_form.search.data + '%'))
 
     users = users.join(Post).join(Like).group_by(User.id).order_by(func.count().desc())
-    page = request.args.get('page', 1, type=int)
-    users = users.paginate(page, current_app.config['USERS_PER_PAGE'], False)
+    users, next_url, prev_url = paginate(users, current_app.config['USERS_PER_PAGE'])
 
-    next_url = url_for('main.leaderboard', page=users.next_num) if users.has_next else None
-    prev_url = url_for('main.leaderboard', page=users.prev_num) if users.has_prev else None
     return render_template('leaderboard.html', title='Leaderboard',
                            users=users.items, next_url=next_url, prev_url=prev_url,
                            form=search_form)
@@ -103,11 +102,9 @@ def leaderboard():
 def show_chat(name):
     chat = Chat.query.filter_by(name=name).first_or_404()
 
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(chat=chat).order_by(Post.created_at.desc())\
-        .paginate(page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.show_chat', name=name, page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.show_chat', name=name, page=posts.prev_num) if posts.has_prev else None
+    posts = Post.query.filter_by(chat=chat).order_by(Post.created_at.desc())
+    posts, next_url, prev_url = paginate(posts, current_app.config['POSTS_PER_PAGE'])
+
     return render_template('chat.html', title=chat.name, chat=chat,
                            posts=posts.items, next_url=next_url, prev_url=prev_url)
 
@@ -168,11 +165,9 @@ def show_post(id):
         flash('Your comment is now live!')
         return redirect(url_for('main.show_post', id=id))
 
-    page = request.args.get('page', 1, type=int)
-    comments = Comment.query.filter_by(post_id=id).order_by(Comment.created_at.desc())\
-        .paginate(page, current_app.config['COMMENTS_PER_PAGE'], False)
-    next_url = url_for('main.show_post', id=id, page=comments.next_num) if comments.has_next else None
-    prev_url = url_for('main.show_chat', id=id, page=comments.prev_num) if comments.has_prev else None
+    comments = Comment.query.filter_by(post_id=id).order_by(Comment.created_at.desc())
+    comments, next_url, prev_url = paginate(comments, current_app.config['COMMENTS_PER_PAGE'])
+
     return render_template('post.html', title=post.title, post=post,
                            comments=comments.items, next_url=next_url, prev_url=prev_url,
                            form=form)
@@ -184,11 +179,8 @@ def show_post(id):
 def show_user(username):
     user = User.query.filter_by(username=username).first_or_404()
 
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(author=user).order_by(Post.created_at.desc()) \
-        .paginate(page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.show_user', username=username, page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.show_user', username=username, page=posts.prev_num) if posts.has_prev else None
+    posts = Post.query.filter_by(author=user).order_by(Post.created_at.desc())
+    posts, next_url, prev_url = paginate(posts, current_app.config['POSTS_PER_PAGE'])
 
     return render_template('user.html', user=user,
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
