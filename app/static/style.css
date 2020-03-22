@@ -1,4 +1,36 @@
 
+div.homepage {
+  text-align: center;
+}
+div.logo {
+  height: 300px;
+}
+div.logo img {
+  height: 100%;
+}
+
+
+
+
+.vote-button {
+  color: lightgrey;
+}
+.vote-button.upvote.selected {
+  color: limegreen;
+}
+.vote-button.downvote.selected {
+  color: red;
+}
+.vote-button.upvote:hover {
+  text-decoration: none;
+  color: green;
+}
+.vote-button.downvote:hover {
+  text-decoration: none;
+  color: palevioletred;
+}
+
+
 .like-button, .unlike-button {
   border-radius: 10px;
   padding: 1px 4px;

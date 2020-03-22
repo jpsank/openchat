@@ -2,11 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    {% if not current_user.is_following(chat) %}
-    <a class="like-button" href="{{ url_for('main.follow', name=chat.name) }}">Follow</a>
-    {% else %}
-    <a class="unlike-button" href="{{ url_for('main.unfollow', name=chat.name) }}">Following</a>
-    {% endif %}
+    {% include "_follow.html" %}
 
     <h1>chat/{{ chat.name }}</h1>
     <p>
@@ -15,7 +11,7 @@
             <a href="{{ url_for('main.edit_chat', name=chat.name) }}">Edit</a>
         {% endif %}
     </p>
-    <p>{{ chat.followed_by.count() }} followers</p>
+    <p>{{ chat.followers.count() }} followers</p>
 
     <br><br>
     <a href="{{ url_for('main.make_post', chat_name=chat.name) }}">Make a Post</a>

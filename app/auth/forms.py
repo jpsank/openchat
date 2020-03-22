@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
+from app.util.filters import is_valid_name
 
 
 class LoginForm(FlaskForm):
@@ -21,8 +22,8 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        if not username.data.isalnum():
-            raise ValidationError('Username must be alphanumeric (no spaces or special characters)')
+        if not is_valid_name(username.data):
+            raise ValidationError('Username must contain only ASCII printable characters')
 
         user = User.get_by_username(username.data)
         if user is not None:

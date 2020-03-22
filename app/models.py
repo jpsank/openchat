@@ -21,19 +21,17 @@ class Base(db.Model):
 
 # Followers
 
-followers = db.Table(
-    'followers',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('chat_id', db.Integer, db.ForeignKey('chat.id'))
-)
+class Follow(Base):
+    """
+    Association table for users following chats
+    """
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'), primary_key=True)
 
 
 # Likes
 
-class Like(Base):
-    """
-    Association table for users liking posts
-    """
+class Vote(Base):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), primary_key=True)
     liked = db.Column(db.Boolean)
@@ -61,13 +59,11 @@ class User(UserMixin, Base):
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
     chats = db.relationship('Chat', backref='creator', lazy='dynamic')
 
-    likes = db.relationship(
-        'Post', secondary='like',
-        backref=db.backref('liked_by', lazy='dynamic'), lazy='dynamic')
+    votes = db.relationship('Vote', backref='user', lazy='dynamic')
 
-    following = db.relationship(
-        'Chat', secondary='followers',
-        backref=db.backref('followed_by', lazy='dynamic'), lazy='dynamic')
+    follows = db.relationship(
+        'Chat', secondary='follow',
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
         return '<User {} {}>'.format(self.username, self.email)
@@ -84,40 +80,47 @@ class User(UserMixin, Base):
     def score(self):
         score = 0
         for post in self.posts:
-            score += post.liked_by.count()
+            score += post.score()
         return score
 
-    # Liking posts
+    # Voting on posts
 
-    def like(self, post):
-        if not self.has_liked(post):
-            self.likes.append(post)
+    def upvote(self, post):
+        vote = self.already_voted(post)
+        if vote is not None:
+            vote.liked = True
+            return vote
+        else:
+            return Vote(user_id=self.id, post_id=post.id, liked=True)
 
-    def unlike(self, post):
-        if self.has_liked(post):
-            self.likes.remove(post)
+    def downvote(self, post):
+        vote = self.already_voted(post)
+        if vote is not None:
+            vote.liked = False
+            return vote
+        else:
+            return Vote(user_id=self.id, post_id=post.id, liked=False)
 
-    def has_liked(self, post):
-        return self.likes.filter(Like.post_id == post.id).scalar() is not None
+    def already_voted(self, post):
+        return self.votes.filter(Vote.post_id == post.id).first()
 
     # Following chats
 
     def follow(self, chat):
         if not self.is_following(chat):
-            self.following.append(chat)
+            self.follows.append(chat)
 
     def unfollow(self, chat):
         if self.is_following(chat):
-            self.following.remove(chat)
+            self.follows.remove(chat)
 
     def is_following(self, chat):
-        return self.following.filter(
-            followers.c.chat_id == chat.id).scalar() is not None
+        return self.follows.filter(
+            Follow.chat_id == chat.id).scalar() is not None
 
     def followed_posts(self):
-        followed = Post.query.join(
-            followers, (followers.c.chat_id == Post.chat_id)).filter(
-            followers.c.user_id == self.id)
+        followed = Post.query.join(Follow, (Follow.chat_id == Post.chat_id))\
+            .filter(Follow.user_id == self.id)
         return followed.order_by(Post.created_at.desc())
 
     # Authentication
@@ -169,10 +172,15 @@ class Post(Base):
 
     comments = db.relationship('Comment', backref='post')
 
+    votes = db.relationship('Vote', backref='post', lazy='dynamic')
+
     attachment = db.relationship('Image', uselist=False, backref='post')
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+    def score(self):
+        return self.votes.filter_by(liked=True).count() - self.votes.filter_by(liked=False).count()
 
     @property
     def body_e(self):
@@ -183,7 +191,7 @@ class Comment(Base):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(512))
 
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
     parent_comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
 
@@ -205,7 +213,6 @@ class Chat(Base):
     @staticmethod
     def get_by_name(name):
         return Chat.query.filter(func.lower(Chat.name) == func.lower(name)).first()
-
 
 
 # Images

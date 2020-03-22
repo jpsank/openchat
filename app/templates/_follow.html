@@ -1,0 +1,8 @@
+{% if current_user.is_anonymous %}
+{% else %}
+    {% if not current_user.is_following(chat) %}
+        <a class="like-button" href="{{ url_for('main.follow', name=chat.name) }}">Follow</a>
+    {% else %}
+        <a class="unlike-button" href="{{ url_for('main.unfollow', name=chat.name) }}">Following</a>
+    {% endif %}
+{% endif %}

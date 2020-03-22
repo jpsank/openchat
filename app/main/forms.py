@@ -5,6 +5,7 @@ from flask_wtf.file import FileAllowed
 from wtforms.validators import ValidationError, DataRequired, Length
 from app.models import User, Chat
 from app import db, images
+from app.util.filters import is_valid_name
 
 
 class EditProfileForm(FlaskForm):
@@ -36,8 +37,8 @@ class ChatForm(FlaskForm):
     submit = SubmitField('Submit')
 
     def validate_name(self, name):
-        if not name.data.isalnum():
-            raise ValidationError('Chat name must be alphanumeric (no spaces or special characters)')
+        if not is_valid_name(name.data):
+            raise ValidationError('Chat name must contain only ASCII printable characters')
 
         chat = Chat.get_by_name(name.data)
         if chat is not None:

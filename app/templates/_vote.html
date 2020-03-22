@@ -1,5 +1,10 @@
-{% if not current_user.has_liked(post) %}
-    <a class="like-button" href="{{ url_for('main.like', post_id=post.id) }}">Like</a>
+{% if current_user.is_anonymous %}
 {% else %}
-    <a class="unlike-button" href="{{ url_for('main.unlike', post_id=post.id) }}">Liked</a>
+    {% set vote = current_user.already_voted(post) %}
+    <a class="vote-button upvote {% if vote and vote.liked %}selected{% endif %}" href="{{ url_for('main.upvote', post_id=post.id) }}">
+        <i class="glyphicon glyphicon-arrow-up"></i>
+    </a>
+    <a class="vote-button downvote {% if vote and not vote.liked %}selected{% endif %}" href="{{ url_for('main.downvote', post_id=post.id) }}">
+        <i class="glyphicon glyphicon-arrow-down"></i>
+    </a>
 {% endif %}

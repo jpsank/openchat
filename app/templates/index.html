@@ -1,26 +1,17 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h3>Hi, {{ current_user.username }}!</h3>
-    <h1>Your Feed</h1>
-    {% for post in posts %}
-        {% include '_post.html' %}
-    {% else %}
-        <p>Nothing here. <a href="{{ url_for('main.explore_chats') }}">Find some chats to follow.</a></p>
-    {% endfor %}
-    <nav aria-label="...">
-        <ul class="pager">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> Newer posts
-                </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    Older posts <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+    <div class="homepage">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='openchat.png') }}">
+        </div>
+        {% if current_user.is_anonymous %}
+            <a href="{{ url_for('auth.login') }}">Login</a>
+        {% else %}
+            <p><a href="{{ url_for('main.feed') }}">Your Feed</a></p>
+            <p><a href="{{ url_for('main.popular') }}">Popular Posts</a></p>
+            <p><a href="{{ url_for('main.explore_chats') }}">Top Chats</a></p>
+            <p><a href="{{ url_for('main.leaderboard') }}">Leaderboard</a></p>
+        {% endif %}
+    </div>
 {% endblock %}

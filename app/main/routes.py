@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from app import db
 from sqlalchemy import func
 from app.main.forms import EditProfileForm, PostForm, ChatForm, CommentForm, EditChatForm, SearchForm
-from app.models import User, Post, Image, Chat, Comment, followers, Like
+from app.models import User, Post, Image, Chat, Comment, Follow, Vote
 from app.main import bp
 from app import Config, images
 import os
@@ -32,18 +32,22 @@ def paginate(items, per_page):
 
 @bp.route('/')
 @bp.route('/index')
-@login_required
 def index():
+    return render_template('index.html', title='Home')
+
+
+@bp.route('/feed')
+@login_required
+def feed():
     posts = current_user.followed_posts()
     posts, next_url, prev_url = paginate(posts, current_app.config['POSTS_PER_PAGE'])
 
-    return render_template('index.html', title='Home',
+    return render_template('feed.html', title='Your Feed',
                            posts=posts.items, next_url=next_url, prev_url=prev_url,
                            include_chat=True)
 
 
 @bp.route('/explore_chats', methods=['GET', 'POST'])
-@login_required
 def explore_chats():
     form = SearchForm()
     chats = db.session.query(Chat)
@@ -52,7 +56,7 @@ def explore_chats():
         chats = chats.filter(Chat.name.like('%' + form.search.data + '%') |
                              Chat.about.like('%' + form.search.data + '%'))
 
-    chats = chats.join(followers).group_by(Chat.id).order_by(func.count().desc())
+    chats = chats.join(Follow).group_by(Chat.id).order_by(func.count().desc())
     chats, next_url, prev_url = paginate(chats, current_app.config['CHATS_PER_PAGE'])
 
     return render_template('explore_chats.html', title='Explore',
@@ -61,7 +65,6 @@ def explore_chats():
 
 
 @bp.route('/popular', methods=['GET', 'POST'])
-@login_required
 def popular():
     search_form = SearchForm()
     posts = db.session.query(Post)
@@ -70,7 +73,7 @@ def popular():
         posts = posts.filter(Post.title.like('%' + search_form.search.data + '%') |
                              Post.body.like('%' + search_form.search.data + '%'))
 
-    posts = posts.join(Like).group_by(Post.id).order_by(func.count().desc())
+    posts = posts.join(Vote).group_by(Post.id).order_by(func.count().desc())
     posts, next_url, prev_url = paginate(posts, current_app.config['POSTS_PER_PAGE'])
 
     return render_template('popular.html', title='Popular',
@@ -79,7 +82,6 @@ def popular():
 
 
 @bp.route('/leaderboard', methods=['GET', 'POST'])
-@login_required
 def leaderboard():
     search_form = SearchForm()
     users = db.session.query(User)
@@ -87,7 +89,7 @@ def leaderboard():
     if search_form.validate_on_submit():
         users = users.filter(User.username.like('%' + search_form.search.data + '%'))
 
-    users = users.join(Post).join(Like).group_by(User.id).order_by(func.count().desc())
+    users = users.join(Post).join(Vote).group_by(User.id).order_by(func.count().desc())
     users, next_url, prev_url = paginate(users, current_app.config['USERS_PER_PAGE'])
 
     return render_template('leaderboard.html', title='Leaderboard',
@@ -98,7 +100,6 @@ def leaderboard():
 # Chats
 
 @bp.route('/chat/<name>', methods=['GET', 'POST'])
-@login_required
 def show_chat(name):
     chat = Chat.query.filter_by(name=name).first_or_404()
 
@@ -146,26 +147,41 @@ def make_post(chat_name):
 
         db.session.add(new_post)
         db.session.commit()
-        flash('Your post is now live!')
+        flash('Your post is now live!f')
         return redirect(url_for('main.show_chat', name=chat_name))
     return render_template('make_post.html', title="New Post", form=form)
 
 
-@bp.route('/post/<id>', methods=['GET', 'POST'])
+@bp.route('/delete_post/<post_id>', methods=['POST'])
 @login_required
-def show_post(id):
-    post = Post.query.filter_by(id=id).first_or_404()
+def delete_post(post_id):
+    post = Post.query.filter_by(id=post_id).first()
+    if post is None:
+        flash('The post you are trying to delete does not exist.')
+        return redirect(request.referrer or url_for('main.index'))
+    chat_name = post.chat.name
+
+    db.session.delete(post)
+    db.session.commit()
+    flash('You deleted the post.')
+    return redirect(request.referrer or url_for('main.show_chat', name=chat_name))
+
+
+@bp.route('/post/<post_id>', methods=['GET', 'POST'])
+def show_post(post_id):
+    post = Post.query.filter_by(id=post_id).first_or_404()
 
     form = CommentForm()
     if form.validate_on_submit():
-        comment = Comment(body=form.body.data, author=current_user)
+        comment = Comment(body=form.body.data,
+                          author=None if current_user.is_anonymous else current_user)
         comment.post = post
         db.session.add(comment)
         db.session.commit()
         flash('Your comment is now live!')
-        return redirect(url_for('main.show_post', id=id))
+        return redirect(url_for('main.show_post', post_id=post_id))
 
-    comments = Comment.query.filter_by(post_id=id).order_by(Comment.created_at.desc())
+    comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.created_at.desc())
     comments, next_url, prev_url = paginate(comments, current_app.config['COMMENTS_PER_PAGE'])
 
     return render_template('post.html', title=post.title, post=post,
@@ -228,30 +244,32 @@ def unfollow(name):
     return redirect(request.referrer or url_for('main.show_chat', name=name))
 
 
-@bp.route('/like/<post_id>')
+@bp.route('/upvote/<post_id>')
 @login_required
-def like(post_id):
+def upvote(post_id):
     the_post = Post.query.filter_by(id=post_id).first()
     if the_post is None:
         flash('Post {} not found.'.format(post_id))
         return redirect(url_for('main.index'))
-    current_user.like(the_post)
+    vote = current_user.upvote(the_post)
+    db.session.merge(vote)
     db.session.commit()
-    flash('You liked the post!')
-    return redirect(request.referrer or url_for('main.show_post', id=post_id))
+    flash('You upvoted the post!')
+    return redirect(request.referrer or url_for('main.show_post', post_id=post_id))
 
 
-@bp.route('/unlike/<post_id>')
+@bp.route('/downvote/<post_id>')
 @login_required
-def unlike(post_id):
+def downvote(post_id):
     the_post = Post.query.filter_by(id=post_id).first()
     if the_post is None:
         flash('Post {} not found.'.format(post_id))
         return redirect(url_for('main.index'))
-    current_user.unlike(the_post)
+    vote = current_user.downvote(the_post)
+    db.session.merge(vote)
     db.session.commit()
-    flash('You unliked the post!')
-    return redirect(request.referrer or url_for('main.show_post', id=post_id))
+    flash('You downvoted the post!')
+    return redirect(request.referrer or url_for('main.show_post', post_id=post_id))
 
 
 # Editing chats

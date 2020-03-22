@@ -7,7 +7,10 @@ venv/
 
 *.db
 migrations/
+migrations2/
 logs/
 
 
+app/populate
 app/static/img
+app/static/img2

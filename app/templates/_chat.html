@@ -1,17 +1,13 @@
     <table class="table table-hover">
         <tr>
             <td width="50px">
-                {% if not current_user.is_following(chat) %}
-                <a class="like-button" href="{{ url_for('main.follow', name=chat.name) }}">Follow</a>
-                {% else %}
-                <a class="unlike-button" href="{{ url_for('main.unfollow', name=chat.name) }}">Following</a>
-                {% endif %}
+                {% include "_follow.html" %}
             </td>
             <td>
                 <a href="{{ url_for('main.show_chat', name=chat.name) }}">
                     chat/{{ chat.name }}
                 </a>
-                {{ chat.followed_by.count() }} followers
+                {{ chat.followers.count() }} followers
                 <p>{{ chat.about }}</p>
             </td>
         </tr>

@@ -1,8 +1,8 @@
-    <a class='custom-link' href="{{ url_for('main.show_post', id=post.id) }}">
+    <a class='custom-link' href="{{ url_for('main.show_post', post_id=post.id) }}">
     <table class="table table-hover">
         <tr>
             <td>
-                {{ post.liked_by.count() }}
+                {{ post.score() }}
             </td>
             <td width="50px">
                 {% include "_vote.html" %}
