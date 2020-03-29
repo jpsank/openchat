@@ -1,0 +1,8 @@
+{% extends "main/layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div class="container">
+        {{ wtf.quick_form(form) }}
+    </div>
+{% endblock %}

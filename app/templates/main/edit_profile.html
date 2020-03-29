@@ -1,8 +1,9 @@
-{% extends 'auth/layout.html' %}
+{% extends "main/layout.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Reset Your Password</h1>
+    <a href="{{ url_for('main.show_user', username=current_user.username) }}">Back to profile</a>
+    <h1>Edit Profile</h1>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}

@@ -1,0 +1,17 @@
+{% extends "main/layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h3>Hi, {{ current_user.username or "Anonymous" }}!</h3>
+    <h1>Popular</h1>
+
+    {% if posts %}
+        {{ wtf.quick_form(form) }}
+        {% for post in posts %}
+            {% include 'main/_post.html' %}
+        {% endfor %}
+        {% include '_pager.html' %}
+    {% else %}
+        <p>No results.</p>
+    {% endif %}
+{% endblock %}

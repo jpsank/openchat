@@ -3,12 +3,26 @@ import click
 from app import db
 
 
-def register(app):
-    @app.cli.command()
+def register(cli):
+    @cli.command()
     def init():
-        print("initializing database")
+        print("Initializing database...")
         if os.path.exists("app.db"):
             os.remove("app.db")
-        os.system("flask db init")
-        os.system("flask db migrate")
-        os.system("flask db upgrade")
+        db.create_all()
+
+    @cli.command()
+    def populate():
+        print("Populating database...")
+        from app import populate
+
+
+if __name__ == '__main__':
+    @click.group()
+    def main_cli():
+        pass
+
+    register(main_cli)
+
+    main_cli()
+

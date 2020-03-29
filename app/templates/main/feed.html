@@ -1,0 +1,15 @@
+{% extends "main/layout.html" %}
+
+{% block app_content %}
+    <h3>Hi, {{ current_user.username }}!</h3>
+    <h1>Your Feed</h1>
+
+    {% if posts %}
+        {% for post in posts %}
+            {% include 'main/_post.html' %}
+        {% endfor %}
+        {% include '_pager.html' %}
+    {% else %}
+        <p>Nothing here. <a href="{{ url_for('main.explore_chats') }}">Find some chats to follow.</a></p>
+    {% endif %}
+{% endblock %}

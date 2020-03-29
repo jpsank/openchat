@@ -3,12 +3,10 @@
 
 .idea/
 __pycache__/
-venv/
+.venv/
+instance/
 
 *.db
-migrations/
-migrations2/
-logs/
 
 
 app/populate

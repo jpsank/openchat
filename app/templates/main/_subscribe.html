@@ -1,0 +1,8 @@
+{% if current_user.is_anonymous %}
+{% else %}
+    {% if not current_user.is_subscribed(chat) %}
+        <a class="like-button" href="{{ url_for('main.subscribe', name=chat.name) }}">Subscribe</a>
+    {% else %}
+        <a class="unlike-button" href="{{ url_for('main.unsubscribe', name=chat.name) }}">Subscribed</a>
+    {% endif %}
+{% endif %}

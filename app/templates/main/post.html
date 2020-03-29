@@ -1,0 +1,43 @@
+{% extends "main/layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+    <a class='nounderline' href="{{ url_for('main.show_user', username=post.author.username) }}">
+        <img alt src="{{ post.author.avatar(25) }}" />
+    </a>
+    <a href="{{ url_for('main.show_user', username=post.author.username) }}">
+        {{ post.author.username }}
+    </a>
+    in <a href="{{ url_for('main.show_chat', name=post.chat.name) }}">chat/{{ post.chat.name }}</a>
+    posted {{ moment(post.created_at).fromNow() }}:
+
+    <br><br>
+    <table>
+        <tr>
+            <td width="20px">
+                {{ post.score }}
+            </td>
+            <td>
+                {% include "main/_vote.html" %}
+            </td>
+        </tr>
+    </table>
+
+    <h2>{{ post.title }}</h2>
+    {% if post.attachment %}
+        <img class="attachment-big" alt="{{ post.attachment.filename }}" src="{{ post.attachment.url }}">
+        <br><br>
+    {% endif %}
+    <p>{{ post.body_e|safe }}</p>
+
+    <br>
+    <div class="container">
+        {{ wtf.quick_form(form) }}
+    </div>
+    <br>
+    {% for comment in comments %}
+        {% include 'main/_comment.html' %}
+    {% endfor %}
+    {% include '_pager.html' %}
+{% endblock %}

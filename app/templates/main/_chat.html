@@ -1,0 +1,14 @@
+    <table class="table table-hover">
+        <tr>
+            <td width="50px">
+                {% include "main/_subscribe.html" %}
+            </td>
+            <td>
+                <a href="{{ url_for('main.show_chat', name=chat.name) }}">
+                    chat/{{ chat.name }}
+                </a>
+                {{ chat.subscribers.count() }} subscribers
+                <p>{{ chat.about }}</p>
+            </td>
+        </tr>
+    </table>

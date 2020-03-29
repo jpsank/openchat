@@ -1,0 +1,23 @@
+{% extends "main/layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% include "main/_subscribe.html" %}
+
+    <h1>chat/{{ chat.name }}</h1>
+    <p>
+        {{ chat.about }}
+        {% if current_user == chat.creator %}
+            <a href="{{ url_for('main.edit_chat', name=chat.name) }}">Edit</a>
+        {% endif %}
+    </p>
+    <p>{{ chat.subscribers.count() }} subscribers</p>
+
+    <br><br>
+    <a href="{{ url_for('main.make_post', chat_name=chat.name) }}">Make a Post</a>
+    <br><br>
+    {% for post in posts %}
+        {% include 'main/_post.html' %}
+    {% endfor %}
+    {% include '_pager.html' %}
+{% endblock %}

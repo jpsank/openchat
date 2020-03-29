@@ -1,0 +1,30 @@
+    <table class="table table-hover">
+        <tr>
+            <td>{{ comment.score }}</td>
+            <td width="50px">
+                {% include "main/_commentvote.html" %}
+            </td>
+            <td width="70px">
+                {% if comment.author %}
+                    <a href="{{ url_for('main.show_user', username=comment.author.username) }}">
+                        <img alt src="{{ comment.author.avatar(70) }}" />
+                    </a>
+                {% endif %}
+            </td>
+            <td>
+                {% if comment.author %}
+                    <a href="{{ url_for('main.show_user', username=comment.author.username) }}">
+                        {{ comment.author.username }}
+                    </a>
+                {% else %}
+                    Anonymous
+                {% endif %}
+                commented {{ moment(comment.created_at).fromNow() }}:
+                <br>
+                {{ comment.body }}
+                {% for comment in comment.comments %}
+                    {% include 'main/_comment.html' %}
+                {% endfor %}
+            </td>
+        </tr>
+    </table>

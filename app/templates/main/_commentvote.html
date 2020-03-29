@@ -1,0 +1,24 @@
+{% if current_user.is_anonymous %}
+{% else %}
+    {% set vote = current_user.already_voted(comment) %}
+
+    {% if vote and vote.liked %}
+        <a class="vote-button upvote selected" href="{{ url_for('main.withdraw_vote_comment', comment_id=comment.id) }}">
+            <i class="glyphicon glyphicon-arrow-up"></i>
+        </a>
+    {% else %}
+        <a class="vote-button upvote" href="{{ url_for('main.upvote_comment', comment_id=comment.id) }}">
+            <i class="glyphicon glyphicon-arrow-up"></i>
+        </a>
+    {% endif %}
+
+    {% if vote and not vote.liked %}
+        <a class="vote-button downvote selected" href="{{ url_for('main.withdraw_vote_comment', comment_id=comment.id) }}">
+            <i class="glyphicon glyphicon-arrow-down"></i>
+        </a>
+    {% else %}
+        <a class="vote-button downvote" href="{{ url_for('main.downvote_comment', comment_id=comment.id) }}">
+            <i class="glyphicon glyphicon-arrow-down"></i>
+        </a>
+    {% endif %}
+{% endif %}

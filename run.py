@@ -1,7 +1,7 @@
 from app import app, db, cli
 from app.models import User
 
-cli.register(app)
+cli.register(app.cli)
 
 
 @app.shell_context_processor
